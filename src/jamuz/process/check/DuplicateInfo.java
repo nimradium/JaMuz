@@ -25,17 +25,28 @@ public class DuplicateInfo {
     /**
      *
      * @param album
-     * @param artist
+     * @param albumArtist
      * @param rating
      * @param checkedFlag
      * @param errorLevel
+	 * @param discNo
+	 * @param discTotal
      */
-    public DuplicateInfo(String album, String artist, double rating, FolderInfo.CheckedFlag checkedFlag, int errorLevel) {
+    public DuplicateInfo(
+			String album, 
+			String albumArtist, 
+			double rating, 
+			FolderInfo.CheckedFlag checkedFlag, 
+			int errorLevel, 
+			int discNo, 
+			int discTotal) {
         this.album = album;
-        this.artist = artist;
+        this.albumArtist = albumArtist;
         this.rating = rating;
         this.checkedFlag = checkedFlag;
         this.errorLevel = errorLevel;
+		this.discNo = discNo;
+		this.discTotal = discTotal;
     }
 
     private String album;
@@ -58,24 +69,24 @@ public class DuplicateInfo {
         this.album = album;
     }
 
-    private String artist;
+    private String albumArtist;
 
     /**
-     * Get the value of artist
+     * Get the value of albumArtist
      *
-     * @return the value of artist
+     * @return the value of albumArtist
      */
-    public String getArtist() {
-        return artist;
+    public String getAlbumArtist() {
+        return albumArtist;
     }
 
     /**
-     * Set the value of artist
+     * Set the value of albumArtist
      *
-     * @param artist new value of artist
+     * @param artist new value of albumArtist
      */
-    public void setArtist(String artist) {
-        this.artist = artist;
+    public void setAlbumArtist(String artist) {
+        this.albumArtist = artist;
     }
 
         private double rating;
@@ -139,12 +150,40 @@ public class DuplicateInfo {
         this.errorLevel = errorLevel;
     }
 
+	private int discNo;
+
+	/**
+	 * Get the value of discNo
+	 *
+	 * @return the value of discNo
+	 */
+	public int getDiscNo() {
+		return discNo;
+	}
+
+	/**
+	 * Set the value of discNo
+	 *
+	 * @param discNo new value of discNo
+	 */
+	public void setDiscNo(int discNo) {
+		this.discNo = discNo;
+	}
+
+	private int discTotal;
+	
+	public int getDiscTotal() {
+		return discTotal;
+	}
+
+	public void setDiscTotal(int discTotal) {
+		this.discTotal = discTotal;
+	}
 
     @Override
     public String toString() {
-        return "<html><b>" + FolderInfoResult.colorField("\"" + album + "\" (\"" + artist + "\")",  //NOI18N
+        return "<html><b>" + FolderInfoResult.colorField("\"" + album + "\" "+" ["+ discNo + "/" + discTotal + "] "
+						+"(\"" + albumArtist + "\")",  //NOI18N
                         errorLevel, false) + "</b> ["+checkedFlag.toString()+"] ["+rating+"]</html>";
     }
-    
-    
 }

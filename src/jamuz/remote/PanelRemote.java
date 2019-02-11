@@ -21,6 +21,7 @@ import jamuz.FileInfoInt;
 import jamuz.gui.DialogQRcode;
 import jamuz.gui.swing.PopupListener;
 import jamuz.gui.swing.ProgressBar;
+import jamuz.process.sync.ICallBackSync;
 import jamuz.process.sync.ProcessSync;
 import jamuz.utils.CrunchifyQRCode;
 import jamuz.utils.Encryption;
@@ -136,7 +137,7 @@ public class PanelRemote extends javax.swing.JPanel {
 		return false;
     }
 	
-	public static void send(String login, ArrayList<FileInfo> mergeListDbSelected) {
+	public static void send(String clientId, ArrayList<FileInfo> mergeListDbSelected) {
 		JSONObject obj = new JSONObject();
 		obj.put("type", "mergeListDbSelected");
 		JSONArray jsonArray = new JSONArray();
@@ -144,7 +145,7 @@ public class PanelRemote extends javax.swing.JPanel {
 				jsonArray.add(mergeListDbSelected.get(i).toMap());
 		}
 		obj.put("files", jsonArray);
-		send(login, obj);
+		send(clientId, obj);
 	}
 	
 	public static boolean isConnected(String clientId) {
@@ -250,12 +251,14 @@ public class PanelRemote extends javax.swing.JPanel {
 					enableConfig(false);
 					jButtonQRcode.setEnabled(true);
 					jButtonStart.setText(Inter.get("Button.Pause"));
+				} else {
+					enableConfig(true);
 				}
 			}
 			else {
 				server.close();
-				enableConfig(true);
 				jButtonStart.setText(Inter.get("Button.Start"));
+				enableConfig(true);
 			}
 		}
         jButtonStart.setEnabled(true);
@@ -455,10 +458,39 @@ public class PanelRemote extends javax.swing.JPanel {
 			//FIXME LOW REMOTE allow aborting with another menu item
 			ProcessSync processSync = new ProcessSync(
 					"Thread.PanelSync.ProcessSync.Remote", 
-					clientInfo.getDevice(), clientInfo.getProgressBar());
+					clientInfo.getDevice(), clientInfo.getProgressBar(), 
+					new CallBackSync());
 			processSync.start();
         }
     }
+	
+	class CallBackSync implements ICallBackSync {
+
+		@Override
+		public void refresh() {
+			//TODO: Refresh only concerned cell (progressBar of given login)
+			server.getTableModel().fireTableDataChanged();
+		}
+
+		@Override
+		public void enable() {}
+
+		@Override
+		public void enableButton(boolean enable) {}
+
+		@Override
+		public void addRow(String file, int idIcon) {}
+
+		@Override
+		public void addRow(String file, String msg) {}
+
+		
+	}
+	
+	static void refreshList() {
+		//TODO: Refresh only concerned cell(s)
+		server.getTableModel().fireTableDataChanged();
+	}
 	
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

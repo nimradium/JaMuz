@@ -111,13 +111,10 @@ public class DialogClientInfo extends javax.swing.JDialog {
 
         jComboBoxPlaylist.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jTextFieldPwd.setText(Inter.get("DialogClientInfo.jTextFieldPwd.text")); // NOI18N
-
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabel3.setText(Inter.get("DialogClientInfo.jLabel3.text")); // NOI18N
 
         jTextFieldLogin.setEditable(false);
-        jTextFieldLogin.setText(Inter.get("DialogClientInfo.jTextFieldLogin.text")); // NOI18N
 
         jLabelPwd.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabelPwd.setText(Inter.get("DialogClientInfo.jLabelPwd.text")); // NOI18N
@@ -208,8 +205,8 @@ public class DialogClientInfo extends javax.swing.JDialog {
 			this.clientInfo.enable(jCheckBoxEnabled.isSelected());
 			
 			if(Jamuz.getDb().setClientInfo(this.clientInfo)) {
-				//FIXME !!!!!!!!!!!!! REMOTE Refresh client info in caller list (remote panel, "Name" column)
 				this.dispose();
+				PanelRemote.refreshList();
 			}
 			else {
 				Popup.warning(Inter.get("Error.Saving")); //NOI18N

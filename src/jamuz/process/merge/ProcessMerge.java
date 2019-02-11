@@ -257,7 +257,7 @@ public class ProcessMerge extends ProcessAbstract {
 		//Copy back databases back 
 		if(!simulate) {
 			if(isRemote) {
-				PanelRemote.send(selectedStatSource.getMachineName(),
+				PanelRemote.send(selectedStatSource.getMachineName()+"-sync",
 						mergeListDbSelected);
 			} else {
 				for (StatSource statSource : sources) {
@@ -581,7 +581,6 @@ public class ProcessMerge extends ProcessAbstract {
 				}
 			}
 			else if(fileSelectedDb.getRating()!=fileJaMuz.getRating()) {
-				//FIXME TEST include this new behavior in junit tests
 				if(fileJaMuz.getRatingModifDate().after(
 						selectedStatSource.lastMergeDate)) {
 					//It has been modified after last merge on JaMuz
@@ -979,14 +978,16 @@ public class ProcessMerge extends ProcessAbstract {
 					checkAbort();
 					//TODO MERGE If aborted, tags will no more be written to file. 
 					if(!fileInfoInt.getGenre().equals("") ) {
-						fileInfoInt.saveGenreToFileTags();
-					} 
+						fileInfoInt.updateGenre(fileInfoInt.getGenre());
+					}
 					else if(fileInfoInt.getBPM()>=0) {
 						fileInfoInt.saveBPMtoFileTags();
 					}
-					//FIXME MERGE Are we updating modifiedDate (path and file) 
-					//and other stats when saving tags (always) ?
-					//+ile.setLastModified() too
+					//FIXME TEST MERGE Are we updating *modifDate 
+					//	(modifDate in path and file 
+							// + ratingModifDate, tagsModifDate & genreModifDate) 
+					//	when saving tags and whererver required
+					//FIXME TEST MERGE Is file.setLastModified() called accordingly ?
 					checkAbort();
 					i.remove();
 				}
@@ -1037,9 +1038,9 @@ public class ProcessMerge extends ProcessAbstract {
         String name=selectedStatSource.getSource().getName()
                 +" ["+DateTime.formatUTC(selectedStatSource.lastMergeDate, 
 						DateTime.DateTimeFormat.FILE, false)+"]";
-        if(!logDbSelected.createFile(prefix+"3-"+name + ".txt")) {
+        if(!logDbSelected.createFile(prefix + "3-" + name + ".txt")) {
             Popup.error(MessageFormat.format(Inter.get("Error.Merge.CreatingLOG"), 
-					new Object[] {prefix+name+".txt"}));  //NOI18N
+					new Object[] {prefix + name + ".txt"}));  //NOI18N
             return false;
         }
         return true;

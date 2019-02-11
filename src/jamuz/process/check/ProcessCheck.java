@@ -193,7 +193,8 @@ public class ProcessCheck {
         displayActionQueue();
         partialTimesScan = new ArrayList<>();
 		partialTimesAnalysis = new ArrayList<>();
-
+		msgScan="";
+		msgAnalysis="";
         doBrowse = new DoBrowse(checkType, idPath, nbAnalysis, nbScan);
         doBrowse.start();
     }
@@ -784,7 +785,7 @@ public class ProcessCheck {
 				//Analyse match tracks
                 this.checkAbort();
                 folder.analyseMatchTracks();
-
+				
                 //Select appropriate action
                 if(folder.isValid()) { //ie: no KO result
                     if(folder.getMatches().size()>0) {

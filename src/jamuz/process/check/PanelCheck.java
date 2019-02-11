@@ -100,6 +100,14 @@ public class PanelCheck extends javax.swing.JPanel {
      */
     public PanelCheck() {
         initComponents();
+		
+		int cores = Runtime.getRuntime().availableProcessors();
+		int coresMax = cores-4;
+		coresMax=coresMax<2?2:coresMax;
+		int coresValue = Math.round(coresMax/2);
+		jSpinnerCheckScanNbThreads.setModel(new javax.swing.SpinnerNumberModel(coresValue, 1, coresMax, 1));
+		jSpinnerCheckAnalysisNbThreads.setModel(new javax.swing.SpinnerNumberModel(coresValue, 1, coresMax, 1));
+		
         processCheck = new ProcessCheck();
         jSpinnerCheckMaxActionsInQueue.setValue(processCheck.getMaxActionQueueSize());
         //Set table model
@@ -116,49 +124,46 @@ public class PanelCheck extends javax.swing.JPanel {
 		column.setMinWidth(100);
 		column.setMaxWidth(100);
 		jButtonActionInJList=new JButton(""); //NOI18N
-		column.setCellRenderer(new TableCellRenderer() {
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {  
-                
-                FolderInfo folder = (FolderInfo) value;
-
-                String res="/jamuz/ressources/"; //NOI18N
-                Color color=Color.WHITE;
-                switch(folder.action) {
-                    case DEL:
-                        res+="bin.png"; //NOI18N
-                        color=Color.DARK_GRAY;
-                        break;
-                    case KO:
-                        res+="cancel.png"; //NOI18N
-                        color=Color.RED;
-                        break;
-                    case OK:
-                        res+="accept.png"; //NOI18N
-                        color=new Color(0, 128, 0);
-                        break;
-                    case WARNING:
-                        res+="accept.png"; //NOI18N
-                        color=Color.ORANGE;
-                        break;
-                    case SAVE:
-                        res+="application_form_edit.png"; //NOI18N
-                        color=new Color(0,153,143);
-                        break;
-                    case ANALYZING:
-                        res+="search_plus.png"; //NOI18N
-                        color=Color.LIGHT_GRAY;
-                        break;
-                    case MANUAL:
-                        res+="document_todo.png";
-                        break;
-                }
-                jButtonActionInJList.setIcon(new javax.swing.ImageIcon(getClass().getResource(res)));
-                jButtonActionInJList.setText(folder.action.toString());
-                jButtonActionInJList.setBackground(color); 
-                return jButtonActionInJList;  
-            }  
-        });  
+		column.setCellRenderer((JTable table, Object value, boolean isSelected, 
+				boolean hasFocus, int row, int column1) -> {
+			FolderInfo folder = (FolderInfo) value;
+			
+			String res="/jamuz/ressources/"; //NOI18N
+			Color color=Color.WHITE;
+			switch(folder.action) {
+				case DEL:
+					res+="bin.png"; //NOI18N
+					color=Color.DARK_GRAY;
+					break;
+				case KO:
+					res+="cancel.png"; //NOI18N
+					color=Color.RED;
+					break;
+				case OK:
+					res+="accept.png"; //NOI18N
+					color=new Color(0, 128, 0);
+					break;
+				case WARNING:
+					res+="accept.png"; //NOI18N
+					color=Color.ORANGE;
+					break;
+				case SAVE:
+					res+="application_form_edit.png"; //NOI18N
+					color=new Color(0,153,143);
+					break;
+				case ANALYZING:
+					res+="search_plus.png"; //NOI18N
+					color=Color.LIGHT_GRAY;
+					break;
+				case MANUAL:
+					res+="document_todo.png";
+					break;
+			}
+			jButtonActionInJList.setIcon(new javax.swing.ImageIcon(getClass().getResource(res)));
+			jButtonActionInJList.setText(folder.action.toString());
+			jButtonActionInJList.setBackground(color);
+			return jButtonActionInJList;
+		});  
 		column.setCellEditor(new ButtonCheck());
         
 		//	0:  Folder
@@ -176,7 +181,6 @@ public class PanelCheck extends javax.swing.JPanel {
         
         progressActionsSize         = (ProgressBar)jProgressBarCheckActionsSize;
         progressActionsDequeue      = (ProgressBar)jProgressBarCheckActionsDequeue;
-        
     }
     
     public static void setThreadPanels(ProcessCheck.CheckType checkType) {
@@ -185,8 +189,12 @@ public class PanelCheck extends javax.swing.JPanel {
                         || checkType.equals(CheckType.SCAN_FULL) 
                         || checkType.equals(CheckType.SCAN_DELETED)));
         
-        setThreadPanel(jPanelScan, (int) jSpinnerCheckScanNbThreads.getValue(), progressBarListScanDequeue, 450, true);
-        setThreadPanel(jPanelAnalysis, (int) jSpinnerCheckAnalysisNbThreads.getValue(), progressBarListAnalysisDequeue, 80, true);
+        setThreadPanel(jPanelScan, 
+				(int) jSpinnerCheckScanNbThreads.getValue(), 
+				progressBarListScanDequeue, 450, true);
+        setThreadPanel(jPanelAnalysis, 
+				(int) jSpinnerCheckAnalysisNbThreads.getValue(), 
+				progressBarListAnalysisDequeue, 80, true);
     }
     
 //    private static void setThreadPanel(JPanel panel, int nbThread, List<ProgressBar> progressBarList) {
@@ -389,7 +397,7 @@ public class PanelCheck extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        jPanelActionsMain.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanelActionsMain.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
         jCheckBoxDoActions.setText("Do actions ?");
         jCheckBoxDoActions.setEnabled(false);
@@ -483,8 +491,6 @@ public class PanelCheck extends javax.swing.JPanel {
         jProgressBarCheckScanSize.setString("0/0"); // NOI18N
         jProgressBarCheckScanSize.setStringPainted(true);
 
-        jSpinnerCheckScanNbThreads.setModel(new javax.swing.SpinnerNumberModel(2, 1, 30, 1));
-
         javax.swing.GroupLayout jPanelScanMainLayout = new javax.swing.GroupLayout(jPanelScanMain);
         jPanelScanMain.setLayout(jPanelScanMainLayout);
         jPanelScanMainLayout.setHorizontalGroup(
@@ -493,7 +499,7 @@ public class PanelCheck extends javax.swing.JPanel {
                 .addComponent(jProgressBarCheckScanSize, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSpinnerCheckScanNbThreads, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(16, 16, 16))
+                .addContainerGap())
             .addComponent(jPanelScan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanelScanMainLayout.setVerticalGroup(
@@ -526,8 +532,6 @@ public class PanelCheck extends javax.swing.JPanel {
         jProgressBarCheckAnalysisSize.setString("0/0"); // NOI18N
         jProgressBarCheckAnalysisSize.setStringPainted(true);
 
-        jSpinnerCheckAnalysisNbThreads.setModel(new javax.swing.SpinnerNumberModel(4, 1, 30, 1));
-
         javax.swing.GroupLayout jPanelAnalysisMainLayout = new javax.swing.GroupLayout(jPanelAnalysisMain);
         jPanelAnalysisMain.setLayout(jPanelAnalysisMainLayout);
         jPanelAnalysisMainLayout.setHorizontalGroup(
@@ -536,7 +540,7 @@ public class PanelCheck extends javax.swing.JPanel {
                 .addComponent(jProgressBarCheckAnalysisSize, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSpinnerCheckAnalysisNbThreads, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addComponent(jPanelAnalysis, javax.swing.GroupLayout.DEFAULT_SIZE, 592, Short.MAX_VALUE)
+            .addComponent(jPanelAnalysis, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
         );
         jPanelAnalysisMainLayout.setVerticalGroup(
             jPanelAnalysisMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -672,12 +676,9 @@ public class PanelCheck extends javax.swing.JPanel {
     }
     
     private static void startProcess(boolean enableDoActions, ProcessCheck.CheckType checkType, int idPath) {
-        
         enableCheck(false);
         enableRowSorter(false);
         stopActions(enableDoActions);
-        
-        //Ask user if he wants to continue in case checkQueue is not empty as it will be deleted
         if(tableModelActionQueue.getRowCount()>0) {
             int n = JOptionPane.showConfirmDialog(
 					null, Inter.get("Question.Check.RemainingActions"),
@@ -690,9 +691,12 @@ public class PanelCheck extends javax.swing.JPanel {
         }
         setThreadPanels(checkType);
         jPanelActionsMain.setVisible(enableDoActions);
-        //Starting process finally
         tableModelActionQueue.clear();
-        processCheck.startCheck(checkType, idPath, (int) jSpinnerCheckAnalysisNbThreads.getValue(), (int) jSpinnerCheckScanNbThreads.getValue());
+        processCheck.startCheck(
+				checkType, 
+				idPath, 
+				(int) jSpinnerCheckAnalysisNbThreads.getValue(), 
+				(int) jSpinnerCheckScanNbThreads.getValue());
     }
 
     

@@ -37,7 +37,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
-import jdk.nashorn.internal.runtime.options.Options;
 import org.apache.commons.io.FileUtils;
 
 /**
@@ -62,10 +61,10 @@ public class PanelOptions extends javax.swing.JPanel {
 		fillMachineList();
 		progressBarCheckedFlag = (ProgressBar)jProgressBarResetChecked;
 		jListGenres.setModel(Jamuz.getGenreListModel());
-		jListTags.setModel(Jamuz.getTagsModel());
 		long size = Long.valueOf(Jamuz.getOptions().get("log.cleanup.keep.size.bytes", "2000000000"));
 		jSpinnerBytes.getModel().setValue(size);
 		jLabelBytes.setText("("+Inter.get("Label.Keep")+" "+StringManager.humanReadableByteCount(size, false)+")");
+		jListTags.setModel(Jamuz.getTagsModel());
 	}
 	
 	public static void fillMachineList() {
@@ -338,7 +337,7 @@ public class PanelOptions extends javax.swing.JPanel {
                     .addComponent(jButtonResetCheckedFlagWarning)
                     .addComponent(jButtonResetCheckedFlagOK))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jProgressBarResetChecked, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+                .addComponent(jProgressBarResetChecked, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -607,7 +606,9 @@ public class PanelOptions extends javax.swing.JPanel {
     private void jButtonGenresDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGenresDelActionPerformed
         if (jListGenres.getSelectedIndex() > -1) { 
             int n = JOptionPane.showConfirmDialog( 
-                    this, MessageFormat.format(Inter.get("Msg.Options.DeleteGenre"), jListGenres.getSelectedValue()), //NOI18N 
+                    this, MessageFormat.format(
+							Inter.get("Msg.Options.DeleteGenre"), 
+							jListGenres.getSelectedValue()), //NOI18N 
                     Inter.get("Label.Confirm"), //NOI18N 
                     JOptionPane.YES_NO_OPTION); 
             if (n == JOptionPane.YES_OPTION) { 
@@ -619,7 +620,8 @@ public class PanelOptions extends javax.swing.JPanel {
     }//GEN-LAST:event_jButtonGenresDelActionPerformed
 
     private void jButtonRetagAllFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetagAllFilesActionPerformed
-        //To re-save all files and remove all remaining unwanted tags, especially ID3v1 and POPM (popularity meter) that Guayadeque can use and  
+        //To re-save all files and remove all remaining unwanted tags, 
+		//	especially ID3v1 and POPM (popularity meter) that Guayadeque can use and  
 		//messes up with the syncing if not used with extra care 
 		//TODO: Add a reset "saved" field in file table, as done for CheckedFlag 
 
@@ -637,34 +639,41 @@ public class PanelOptions extends javax.swing.JPanel {
 
     private void jButtonTagsEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonTagsEditActionPerformed
         if (jListTags.getSelectedIndex() > -1) { 
-            String input = JOptionPane.showInputDialog(null, Inter.get("Msg.Options.Tag.New"), jListTags.getSelectedValue());  //NOI18N 
+            String input = JOptionPane.showInputDialog(null, 
+					Inter.get("Msg.Options.Tag.New"), 
+					jListTags.getSelectedValue());  //NOI18N 
             if (input != null) { 
                 int n = JOptionPane.showConfirmDialog( 
-                        this, MessageFormat.format(Inter.get("Msg.Options.Tag.Update"), jListTags.getSelectedValue(), input), //NOI18N 
+                        this, MessageFormat.format(
+								Inter.get("Msg.Options.Tag.Update"), 
+								jListTags.getSelectedValue(), input), //NOI18N 
                         Inter.get("Label.Confirm"), //NOI18N 
                         JOptionPane.YES_NO_OPTION); 
-                if (n == JOptionPane.YES_OPTION) { 
-					//FIXME MERGE Renaming a tag issues merge :
-					// - The tag is added back
-					// - If you then merge forcing JaMuz, all files loose this tag
-                    Jamuz.getDb().updateTag((String) jListTags.getSelectedValue(), input); 
-                    Jamuz.readTags(); 
-					jListTags.setModel(Jamuz.getTagsModel());
+                if (n == JOptionPane.YES_OPTION) {
+                    Jamuz.getDb().updateTag((String) 
+							jListTags.getSelectedValue(), input); 
+					refreshListTagsModel();
                 } 
             } 
         } 
     }//GEN-LAST:event_jButtonTagsEditActionPerformed
 
+	public static void refreshListTagsModel() {
+		Jamuz.readTags();
+		jListTags.setModel(Jamuz.getTagsModel());
+	}
+	
     private void jButtonTagsDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonTagsDelActionPerformed
         if (jListTags.getSelectedIndex() > -1) { 
             int n = JOptionPane.showConfirmDialog( 
-                    this, MessageFormat.format(Inter.get("Msg.Options.Tag.Delete"), jListTags.getSelectedValue()), //NOI18N 
+                    this, MessageFormat.format(
+							Inter.get("Msg.Options.Tag.Delete"), 
+							jListTags.getSelectedValue()), //NOI18N 
                     Inter.get("Label.Confirm"), //NOI18N 
                     JOptionPane.YES_NO_OPTION); 
             if (n == JOptionPane.YES_OPTION) {
                 Jamuz.getDb().deleteTag((String) jListTags.getSelectedValue()); 
-                Jamuz.readTags(); 
-				jListTags.setModel(Jamuz.getTagsModel());
+                refreshListTagsModel();
             } 
         } 
     }//GEN-LAST:event_jButtonTagsDelActionPerformed
@@ -676,8 +685,7 @@ public class PanelOptions extends javax.swing.JPanel {
             Popup.warning(MessageFormat.format(Inter.get("Msg.Options.Tag.Exists"), input));  //NOI18N 
         } else if (!input.equals("")) {  //NOI18N 
             Jamuz.getDb().insertTag(input); 
-            Jamuz.readTags(); 
-			jListTags.setModel(Jamuz.getTagsModel());
+            refreshListTagsModel();
         }
     }//GEN-LAST:event_jButtonTagsAddActionPerformed
 
@@ -748,6 +756,7 @@ public class PanelOptions extends javax.swing.JPanel {
 							checkAbort();
 							progressBar.progress(folderInfo.folder.getName());
 							totalSize+=folderInfo.size;
+							//FIXME LOW GLOBAL Replace all System.out and .err by JaMuz.getLogger
 							System.out.println(folderInfo.folder.getName()
 									+" ("+StringManager.humanReadableByteCount(
 											folderInfo.size, true)+")"
@@ -803,9 +812,9 @@ public class PanelOptions extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelBytes;
     private javax.swing.JLabel jLabelCleanup;
-    private javax.swing.JList jListGenres;
+    private static javax.swing.JList jListGenres;
     private static javax.swing.JList jListMachines;
-    private javax.swing.JList jListTags;
+    private static javax.swing.JList jListTags;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;

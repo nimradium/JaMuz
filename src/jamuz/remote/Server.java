@@ -183,6 +183,10 @@ public class Server {
 										file = Jamuz.getDb().getFile(idFile);
 										toInsertInDeviceFiles.add(file);
 									}
+									//FIXME LOW REMOTE Insert in devicefile at export
+									//as using db results in timeouts when using PanelCheck meantime for instance
+									//+it will speed up as no need for double-ack
+									//-> need to merge first before sending new list of files to download
 									setStatus(login, "Inserting into device file list");
 									ArrayList<FileInfoInt> inserted= Jamuz.getDb().
 											insertDeviceFiles(toInsertInDeviceFiles, device.getId());
@@ -193,7 +197,7 @@ public class Server {
 											list.add(ins.toMap());
 										}
 										
-									}//FIXME LOW REMOTE else { Manage potential error => Send STOP to remote with erro msg }
+									}//FIXME LOW REMOTE else { Manage potential error => Send STOP to remote with error msg }
 									setStatus(login, "Sending list of ack. files");
 									JSONObject obj = new JSONObject();
 									obj.put("type", "insertDeviceFileSAck");
@@ -237,7 +241,7 @@ public class Server {
 				//Creates a new machine, device and statSource
 				//and store the client
 				StringBuilder zText = new StringBuilder ();
-				if(Jamuz.getDb().isMachine(client.getInfo().getLogin(), zText)) {
+				if(Jamuz.getDb().isMachine(client.getInfo().getLogin(), zText, true)) {
 					Device device = new Device(-1, 
 							client.getInfo().getLogin(), 
 							"source", client.getInfo().getLogin(), 

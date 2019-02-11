@@ -146,6 +146,7 @@ public class PanelMain extends javax.swing.JFrame {
         setTab("PanelMain.panelPlaylists.TabConstraints.tabTitle", "application_view_list");
         setTab("Label.Lyrics", "text");
         setTab("PanelMain.panelStats.TabConstraints.tabTitle", "statistics");
+		setTab("PanelMain.panelRemote.TabConstraints.tabTitle", "android");
         setTab("Label.Options", "selected");
         setTab("PanelMain.panelVideo.TabConstraints.tabTitle", "movies");
 		setTab("PanelMain.panelBook.TabConstraints.tabTitle", "book_open");
@@ -189,7 +190,10 @@ public class PanelMain extends javax.swing.JFrame {
 		MPlaybackListener mPlaybackListener = new MPlaybackListener() {
 			@Override
 			public void volumeChanged(float volume) {
-				jSpinnerVolume.getModel().setValue(volume);
+				if(volume>=0) {
+					volume=5*Math.round(volume/5);
+					jSpinnerVolume.getModel().setValue((float)volume);
+				}
 			}
 
 			@Override
@@ -299,7 +303,7 @@ public class PanelMain extends javax.swing.JFrame {
 		FileInfoInt file = queueModel.getPlayingSong().getFile();
 		if(file.isFromLibrary()) {
 			Jamuz.getDb().updateLastPlayedAndCounter(file);
-			//FIXME PLAYER Do not increase playCounter when moved back on queue and moved forward
+			//FIXME LOW PLAYER Do not increase playCounter when moved back on queue and moved forward
 			// especially if many back and forward
 			//If not, increase playCounter too much
 			// => Refer to JaMuzRemote:
@@ -1336,8 +1340,8 @@ public class PanelMain extends javax.swing.JFrame {
     }//GEN-LAST:event_jPanelPlayerCoverMousePressed
 
     private void jButtonPlayerPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPlayerPlayActionPerformed
-        if (jButtonPlayerPlay.getText().equals(Inter.get("Button.Pause"))) { //NOI18N
-            pause();
+		if (jButtonPlayerPlay.getText().equals(Inter.get("Button.Pause"))) { //NOI18N
+			pause();
         } else {
 			//resume
             playSelected(true);

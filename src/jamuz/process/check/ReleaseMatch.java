@@ -68,32 +68,6 @@ public class ReleaseMatch implements java.lang.Comparable {
 		this.year = year;
 		this.tracks = new ArrayList<>();
 		this.idPath = idPath;
-		
-		//Search for duplicates
-        
-        //FIXME CHECK Add type in displayed combo (exact duplicate, ...) if color not enough. 
-		//At least mention "duplicate found: "
-        // or " no duplicates"
-        
-        //FIXME CHECK Support new album can be a missing CD on a CD serie (ex disc 3/4 missing)
-        //FIXME CHECK Support duplicate can be from a various folder (check that original is the complete album)
-        //FIXME CHECK Support check duplicate status (OK, KO,...) and offer to replace if new is better
-        
-		this.duplicates = new ArrayList<>();
-		
-		if(!checkDuplicate(this.artist, this.album)) {
-			if(!this.checkExactAlbum(this.album)) {
-				if(this.checkSimilarAlbum(this.album)) {
-					isWarningDuplicate=true;
-				}
-			}
-			else {
-				isWarningDuplicate=true;
-			}
-		}
-		else {
-			isErrorDuplicate=true;
-		}
 	}
 	
 	/**
@@ -160,7 +134,8 @@ public class ReleaseMatch implements java.lang.Comparable {
 	 * @param format
 	 * @param idPath
 	 */
-	public ReleaseMatch(ReleaseWs2 releaseWs2, int score, int discNb, int discTotal, int trackTotal, String format, int idPath) {
+	public ReleaseMatch(ReleaseWs2 releaseWs2, int score, int discNb, 
+			int discTotal, int trackTotal, String format, int idPath) {
 		this(releaseWs2,  score, discTotal, idPath);
 		this.discNb = discNb;
 		this.trackTotal = trackTotal;
@@ -215,10 +190,10 @@ public class ReleaseMatch implements java.lang.Comparable {
 		this.source = source;
 		this.trackTotal = trackTotal;
 	}
-	
-	private boolean checkExactAlbum(String value) {
+
+	private boolean checkExactAlbum() {
 		ArrayList<DuplicateInfo> myList = new ArrayList<>();
-		Jamuz.getDb().checkAlbumExact(myList, value, this.idPath);
+		Jamuz.getDb().checkAlbumExact(myList, album, idPath);
 		if(myList.size()>0) {
 			this.duplicates.addAll(myList);
 			return true;
@@ -226,21 +201,41 @@ public class ReleaseMatch implements java.lang.Comparable {
 		return false;
 	}
 	
-	private boolean checkSimilarAlbum(String value) {
+	private boolean checkSimilarAlbum() {
 		ArrayList<DuplicateInfo> myList = new ArrayList<>();
-		Jamuz.getDb().checkAlbumSimilar(myList, value, this.idPath);
+		Jamuz.getDb().checkAlbumSimilar(myList, album, idPath);
 		if(myList.size()>0) {
-			this.duplicates.addAll(myList);
+			duplicates.addAll(myList);
 			return true;
 		}
 		return false;
 	}
 	
-	private boolean checkDuplicate(String artist, String album) {
+	private boolean checkDuplicateMbId() {
 		ArrayList<DuplicateInfo> myList = new ArrayList<>();
-		Jamuz.getDb().checkAlbumDuplicate(myList, artist, album, this.idPath);
+		Jamuz.getDb().checkAlbumDuplicate(myList, id);
 		if(myList.size()>0) {
-			this.duplicates.addAll(myList);
+			duplicates.addAll(myList);
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean checkDuplicateAlbumArtistNumber() {
+		ArrayList<DuplicateInfo> myList = new ArrayList<>();
+		Jamuz.getDb().checkAlbumDuplicate(myList, artist, album, idPath, discNb, discTotal);
+		if(myList.size()>0) {
+			duplicates.addAll(myList);
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean checkSimilarAlbumArtist() {
+		ArrayList<DuplicateInfo> myList = new ArrayList<>();
+		Jamuz.getDb().checkAlbumDuplicate(myList, artist, album, idPath);
+		if(myList.size()>0) {
+			duplicates.addAll(myList);
 			return true;
 		}
 		return false;
@@ -251,7 +246,25 @@ public class ReleaseMatch implements java.lang.Comparable {
 	 * @return
 	 */
 	public List<DuplicateInfo> getDuplicates() {
-		return this.duplicates;
+		if(duplicates==null) {
+			//Search for duplicates
+
+			//FIXME LOW CHECK duplicate: check that original is the complete album (can be from a various artist/album folder)
+			//FIXME LOW CHECK duplicate: Offer to replace if new is better (OK > OK - Warning (> Manual) > KO)
+
+			duplicates = new ArrayList<>();
+			if(		checkDuplicateMbId() 
+					|| (isDiscPart && checkDuplicateAlbumArtistNumber())
+					|| (!isDiscPart && checkSimilarAlbumArtist())) {
+				isErrorDuplicate=true;
+			} else if( 
+					(isDiscPart && checkSimilarAlbumArtist())
+					|| checkSimilarAlbum()
+					|| checkExactAlbum()) {
+				isWarningDuplicate=true;
+			}
+		}
+		return duplicates;
 	}
 
 	/**
@@ -282,7 +295,11 @@ public class ReleaseMatch implements java.lang.Comparable {
 			if(this.source.equals(ReleaseMatch.MUSICBRAINZ)) {
 				//MusicBrainz
                 ReleaseMB releaseMB = new ReleaseMB(progressBar);
-                List<Track> MBtracks = releaseMB.lookup(this.getId(), this.isDiscPart, this.discNb, this.discTotal);
+                List<Track> MBtracks = releaseMB.lookup(
+						this.getId(), 
+						this.isDiscPart, 
+						this.discNb, 
+						this.discTotal);
                 if(MBtracks!=null) {
                     this.tracks.addAll(MBtracks);
                     this.isLookup=true;

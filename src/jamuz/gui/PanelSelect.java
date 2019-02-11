@@ -66,10 +66,6 @@ import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JMenu;
 
-//FIXME PLAYER Bug "Kid Creole and the Coconuts"
-//idPath IN (784, 785)
-//=> Album "Best Of" ne s'affiche pas !!!???
-//FIXME PLAYER Bug on Pause: hangs and cannot stop playback sometimes
 /**
  *
  * @author phramusca ( https://github.com/phramusca/JaMuz/ )
@@ -87,9 +83,7 @@ public class PanelSelect extends javax.swing.JPanel {
     private static String selGenre; //TODO: Deriver ListElement et l'appliquer a selGenre (pour affichage icone de la même façon)
 	private static ListElement selArtist;
 	private static ListElement selAlbum; 
-	//FIXME PLAYER ex: Album "Charango" is either from Morcheeba or Yannick Noah
-    //BUT seen as only one album in Select tab
-
+	
 	/**
 	 *
 	 */
@@ -185,38 +179,28 @@ public class PanelSelect extends javax.swing.JPanel {
         
         
         //Menu listener
-        ActionListener menuListener = new ActionListener() {
-
-			@Override
-            public void actionPerformed(ActionEvent e) {
-                JMenuItem source = (JMenuItem)(e.getSource());
-                String sourceTxt=source.getText();
-//                String s = "Action event detected."
-//                           + "\n"
-//                           + "    Event source: " + source.getText()
-//                           + " (an instance of " + getClassName(source) + ")";
-//                Popup.info(s);
-                if(sourceTxt.equals(Inter.get("Button.Edit"))) { //NOI18N
-                    menuEdit();
-                }
-                else if(sourceTxt.equals(Inter.get("MainGUI.jButtonSelectQueue.text"))) { //NOI18N
-                    menuQueue();
-                }
-                else if(sourceTxt.equals(Inter.get("MainGUI.jButtonSelectQueueAll.text"))) { //NOI18N
-                    menuQueueAll();
-                }
-				else if(sourceTxt.equals("Preview")) { //NOI18N
-                    menuPreview();
-                }
-                else if(sourceTxt.equals(Inter.get("Label.Check"))) { //NOI18N
-                    menuCheck();
-                }
-                else {
-                    Popup.error(Inter.get("UNKNOWN MENU ITEM"));
-                }
-                
-            }
-        };
+        ActionListener menuListener = (ActionEvent e) -> {
+			JMenuItem source = (JMenuItem)(e.getSource());
+			String sourceTxt=source.getText();
+			if(sourceTxt.equals(Inter.get("Button.Edit"))) { //NOI18N
+				menuEdit();
+			}
+			else if(sourceTxt.equals(Inter.get("MainGUI.jButtonSelectQueue.text"))) { //NOI18N
+				menuQueue();
+			}
+			else if(sourceTxt.equals(Inter.get("MainGUI.jButtonSelectQueueAll.text"))) { //NOI18N
+				menuQueueAll();
+			}
+			else if(sourceTxt.equals("Preview")) { //NOI18N
+				menuPreview();
+			}
+			else if(sourceTxt.equals(Inter.get("Label.Check"))) { //NOI18N
+				menuCheck();
+			}
+			else {
+				Popup.error(Inter.get("UNKNOWN MENU ITEM"));
+			}
+		};
         
         JMenuItem  menuItem = new JMenuItem(Inter.get("MainGUI.jButtonSelectQueue.text")); //NOI18N
         menuItem.addActionListener(menuListener);
@@ -318,7 +302,7 @@ public class PanelSelect extends javax.swing.JPanel {
         double minYear = Jamuz.getDb().getYear("MIN"); //NOI18N
         minYear = (10*Math.floor(minYear/10));
         double maxYear = Jamuz.getDb().getYear("MAX"); //NOI18N
-        maxYear = (10*Math.ceil(maxYear/10));
+        maxYear = (10*Math.ceil(maxYear/10))+10;
         SpinnerModel yearModel; 
         yearModel = new SpinnerNumberModel(minYear, minYear, maxYear, 10.0);
         jSpinnerSelectYearFrom.setModel(yearModel);
@@ -958,7 +942,7 @@ public class PanelSelect extends javax.swing.JPanel {
             PanelCheck.check(myFileInfo.getIdPath());			 		
 		}
     }
-    private static Mplayer mplayer= new Mplayer();
+    private static final Mplayer mplayer= new Mplayer();
 	private void menuPreview() {
 		//Getting selected File 		
 		int selectedRow = jTableSelect.getSelectedRow(); 			
@@ -1203,11 +1187,8 @@ public class PanelSelect extends javax.swing.JPanel {
 					PanelMain.setColumnVisible(TABLE_COLUMN_MODEL, 12, checkList(12));  //NOI18N
 				}
 				
-                //Enable row tableSorter (cannot be done if model is empty)
                 if(tableModel.getRowCount()>0) {
-                    //Enable auto sorter
                     jTableSelect.setAutoCreateRowSorter(true);
-                    //Sort by action, result
                     TableRowSorter<TableModel> tableSorter = new TableRowSorter<>(tableModel);
                     jTableSelect.setRowSorter(tableSorter);
                     List <RowSorter.SortKey> sortKeys = new ArrayList<>();

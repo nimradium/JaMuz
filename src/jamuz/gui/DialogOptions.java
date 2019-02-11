@@ -138,7 +138,7 @@ public class DialogOptions extends javax.swing.JDialog {
 		//Show device list for selected machine
 		DefaultListModel devicesModel=(DefaultListModel) jListDevices.getModel();
 		devicesModel.clear();
-		selOptions.getDevices().stream().forEach((device) -> {
+		selOptions.getDevices(true).stream().forEach((device) -> {
 			devicesModel.addElement(device);
 		});
 	}

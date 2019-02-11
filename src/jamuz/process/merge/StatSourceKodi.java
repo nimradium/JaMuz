@@ -87,7 +87,6 @@ public class StatSourceKodi extends StatSourceSQL {
 	public String guessRootPath() {
         ResultSet rs = null;
         try {
-            
             PreparedStatement stSelectPath = dbConn.getConnnection().prepareStatement(
 					"SELECT strPath FROM path ORDER BY length(strPath) ASC LIMIT 1");   //NOI18N
             rs = stSelectPath.executeQuery();
@@ -112,9 +111,7 @@ public class StatSourceKodi extends StatSourceSQL {
 
 	@Override
 	public boolean getTags(ArrayList<String> tags, FileInfo file) {
-		//FIXME MERGE TAGS get tags from Kodi
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	
+		//No such thing as tag in kodi, at least when checked
+		throw new UnsupportedOperationException("Not supported yet.");
+	}	
 }

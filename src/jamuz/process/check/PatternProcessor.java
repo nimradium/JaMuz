@@ -16,7 +16,6 @@
  */
 package jamuz.process.check;
 
-import jamuz.utils.Inter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,68 +23,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 
 /**
  *
  * @author phramusca ( https://github.com/phramusca/JaMuz/ )
  */
 public class PatternProcessor {
-     
+
 	/**
-	 *
+	 * Gets Map<Identifier, Value> of extracted items
 	 * @param path
 	 * @param pattern
 	 * @return
 	 */
 	public static Map<String, String> getMap(String path, String pattern) {
-        return extract(path, pattern);
-    }
-  
-	/**
-	 *
-	 * @param path
-	 * @param pattern
-	 * @return
-	 */
-	public static String toString(String path, String pattern) {
- 
-        Map<String, String> extracted = extract(path, pattern);
-        
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>".concat(String.valueOf(extracted.size())).concat(" | "));
-        appendValue(sb, "%z", Inter.get("Tag.AlbumArtist"), extracted); //album artist);
-        appendValue(sb, "%b", Inter.get("Tag.Album"), extracted);//album
-        
-        appendValue(sb, "%n", Inter.get("Tag.TrackNo"), extracted); //track#);
-        appendValue(sb, "%l", Inter.get("Tag.Artist"), extracted); //# of tracks);
-        
-        appendValue(sb, "%d", Inter.get("Tag.DiscNo"), extracted); //disc#);
-        appendValue(sb, "%x", Inter.get("Tag.Artist"), extracted); //# of discs);
-        
-        appendValue(sb, "%a", Inter.get("Tag.Artist"), extracted); //artist
-        appendValue(sb, "%t", Inter.get("Tag.Title"), extracted); //title);
-        
-        appendValue(sb, "%y", Inter.get("Tag.Year"), extracted); //year);
-        
-        appendValue(sb, "%c", Inter.get("Tag.Comment"), extracted); //comment);
-        sb.append("</html>");
-        return sb.toString();
-    }
-    
-    private static void appendValue(StringBuilder sb, String key, String label, Map<String, String> extracted) {
-        if(extracted.containsKey(key)) {
-            String value = extracted.get(key);
-            if(!value.equals("")) {
-                sb.append("".concat(label).concat(" : \"<b>").concat(value).concat("</b>\""));
-            }
-            else {
-                sb.append(key.concat(" : {Empty}"));
-            }
-            sb.append(" ");
-        }
-    }
-
-    private static Map<String, String> extract(String path, String pattern) {
         
         //Split by path separator and remove unwanted as of pattern
         int nbSeparatorInPattern = StringUtils.countMatches(pattern, File.separator);
@@ -104,14 +56,25 @@ public class PatternProcessor {
         //Extract parameters from pattern
         List<String> params = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
+		String nextChars;
         for(int i = 0; i < pattern.length(); i++)
         {
             Character c = pattern.charAt(i);
             if(c == '%') {
-                if(!sb.toString().equals(""))
+                if(!sb.toString().equals("")) {
                     params.add(sb.toString());
+				}
                 sb = new StringBuilder();
-                params.add("%"+pattern.charAt(i+1));
+				if((i+1)>=pattern.length()) {
+					break;
+				}
+				if((i+5)<pattern.length() && pattern.substring(i+1, i+5).contains("::")) {
+					nextChars=pattern.substring(i+1, i+5);
+					i+=3;
+				} else {
+					nextChars=String.valueOf(pattern.charAt(i+1));
+				}
+                params.add("%"+nextChars);
                 i++;
             }
             else {
@@ -126,6 +89,7 @@ public class PatternProcessor {
         String param;
         int posParam;
         String before;
+		String paramBefore;
         String analyzedText = path;
         for(int i = 0; i < params.size(); i++) {
             param=params.get(i);
@@ -134,7 +98,33 @@ public class PatternProcessor {
                 if(posParam<0) return extracted;
                 before = analyzedText.substring(0, posParam);
                 analyzedText = analyzedText.substring(posParam+param.length());
-                extracted.put(params.get(i-1), before);
+				if(i>0) {
+					paramBefore = params.get(i-1);
+					if(paramBefore.contains("::")) {
+						switch(paramBefore.substring(4, 5)) {
+							case "U":
+								before=before.toUpperCase();
+								break;
+							case "l":
+								before=before.toLowerCase();
+								break;
+							case "c":
+								before=WordUtils.capitalize(before);
+								break;
+							case "C":
+								before=WordUtils.capitalizeFully(before);
+								break;
+							case "u":
+								before=WordUtils.uncapitalize(before);
+								break;
+							case "s":
+								before=WordUtils.swapCase(before);
+								break;
+						}
+						paramBefore=paramBefore.substring(0, 2);
+					}
+					extracted.put(paramBefore, before);
+				}
             }
         }
         return extracted;

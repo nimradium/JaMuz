@@ -48,11 +48,11 @@ import jamuz.gui.swing.TableColumnModel;
 import jamuz.gui.swing.WrapLayout;
 import jamuz.utils.Inter;
 import jamuz.utils.Swing;
+import jamuz.utils.Utils;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.util.Collections;
-import java.util.Comparator;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -131,14 +131,6 @@ public class DialogCheck extends javax.swing.JDialog {
         public void actionPerformed(ActionEvent e) {
             String genre = e.getActionCommand();
             applyGenre(genre);
-            
-            FolderInfoResult result = folder.getResults().get("genre"); //NOI18N
-            if(result.errorLevel<=0 && result.value.equals(genre)) {
-                highlightGenre(result.value, Color.GREEN);
-            }
-            else {
-                highlightGenre(genre, Color.ORANGE);
-            }
         }
     }
 
@@ -1432,9 +1424,10 @@ public class DialogCheck extends javax.swing.JDialog {
         if(doSave) {
             folder.action = ProcessCheck.Action.SAVE;
 			int i=0;
-			//FIXME CHECK Issue here when a file is missing compared to match
 			for(FileInfoDisplay file : folder.getFilesAudioTableModel().getFiles()) {
-				folder.getFilesAudio().get(file.index).index=i;
+				if(file.index<folder.getFilesAudio().size()) {
+					folder.getFilesAudio().get(file.index).index=i;
+				}
 				i++;
 			}
 			Collections.sort(folder.getFilesAudio(), 
@@ -1488,7 +1481,9 @@ public class DialogCheck extends javax.swing.JDialog {
                 //Analyzing right before displaying so that previously added folders are taken into account for duplicate check
 //                progressBar.setIndeterminate("");  //NOI18N
                 //TODO: Use a real discTotal, or ask user somehow
-                folder.searchMatches(jTextFieldCheckAlbum.getText(), jTextFieldCheckAlbumArtist.getText(), progressBar);
+                folder.searchMatches(jTextFieldCheckAlbum.getText(), 
+						jTextFieldCheckAlbumArtist.getText(), -1, -1, 
+						progressBar);
                 progressBar.reset();
                 //Fill matches combo box
                 displayMatches();
@@ -1663,9 +1658,9 @@ public class DialogCheck extends javax.swing.JDialog {
             field = "album";
             label = duplicateInfo.getAlbum();
         }
-        else if(!duplicateInfo.getArtist().equals("")) {
+        else if(!duplicateInfo.getAlbumArtist().equals("")) {
             field = "artist";
-            label = duplicateInfo.getArtist();
+            label = duplicateInfo.getAlbumArtist();
         }
         else {
             field = "artist";
@@ -1736,6 +1731,8 @@ public class DialogCheck extends javax.swing.JDialog {
 		jButtonCheckOK.setEnabled(enable);
 		jButtonCheckDelete.setEnabled(enable);
         Swing.enableComponents(jPanelGenre, enable);
+		//whatever jPanelGenre enabled or not:
+		jCheckBoxCheckGenreDisplay.setEnabled(true); 
 		jComboBoxCheckMatches.setEnabled(enable);
 		jComboBoxCheckDuplicates.setEnabled(enable);
 		jTextFieldCheckYear.setEnabled(enable);
@@ -1746,8 +1743,9 @@ public class DialogCheck extends javax.swing.JDialog {
         jButtonCheckApplyAlbum.setEnabled(enable);
         jButtonCheckApplyYear.setEnabled(enable);
 		jPanelCheckCoverThumb.setEnabled(enable);
-//		jButtonCheckPreview.setEnabled(enable);
 		jButtonCheckEditTag.setEnabled(enable);
+		jButtonCheckScanner.setEnabled(enable);
+		jButtonSelectOriginal.setEnabled(enable);
 	}
     
 	/**
@@ -1789,16 +1787,16 @@ public class DialogCheck extends javax.swing.JDialog {
 //                        displayMatchTracks(21);
                         break;
                     case "%d": //disc#
-                        file.setDiscNo(getInteger(entryValue));
+                        file.setDiscNo(Utils.getInteger(entryValue));
                         break;
                     case "%l": //# of tracks
-                        file.setTrackTotal(getInteger(entryValue));
+                        file.setTrackTotal(Utils.getInteger(entryValue));
                         break;
                     case "%n": //track#
-                        file.setTrackNo(getInteger(entryValue));
+                        file.setTrackNo(Utils.getInteger(entryValue));
                         break;
                     case "%x": //# of discs
-                        file.setDiscTotal(getInteger(entryValue));
+                        file.setDiscTotal(Utils.getInteger(entryValue));
                         break;
                 }
             }
@@ -1808,15 +1806,7 @@ public class DialogCheck extends javax.swing.JDialog {
         folder.getFilesAudioTableModel().fireTableDataChanged();
         
     }
-    
-    private static int getInteger(String entry) {
-        try {
-            return Integer.parseInt(entry);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
-    
+	
     /**
 	 * Displays a folder in check tab
 	 */
@@ -1866,7 +1856,9 @@ public class DialogCheck extends javax.swing.JDialog {
 			//GENRE
 				result = folder.getResults().get("genre"); //NOI18N
                 setAddCheckBox(jCheckBoxCheckGenreDisplay, result);  //NOI18N
-                if(result.errorLevel>0) {
+				if(folder.getNewGenre()!=null) {
+					applyGenre(folder.getNewGenre());
+				} else if(result.errorLevel>0) {
                     highlightGenre(true);
 				}
 				else {
@@ -1898,7 +1890,7 @@ public class DialogCheck extends javax.swing.JDialog {
 				setAddCheckBox(jCheckBoxCheckCoverDisplay, result, false);  //NOI18N
 				
 				//By default, display cover selected for Saving 
-                BufferedImage myImage = null;
+                BufferedImage myImage;
 				if(folder.getNewImage()!=null && folder.action.equals(ProcessCheck.Action.SAVE)) {
 					myImage = folder.getNewImage();
 				}
@@ -1915,11 +1907,11 @@ public class DialogCheck extends javax.swing.JDialog {
 					coverImg.setImage(null);
 					if(folder.getFilesImage().size()>0) {
 						jPanelCheckCoverThumb.setEnabled(true);
-						jLabelCoverInfo.setText(FolderInfoResult.colorField(Inter.get("Label.Select"), 2, true)); //NOI18N
+						jLabelCoverInfo.setText(FolderInfoResult.colorField(Inter.get("Label.Select"), 2)); //NOI18N
 					}
 					else {
 						jPanelCheckCoverThumb.setEnabled(false);
-						jLabelCoverInfo.setText(FolderInfoResult.colorField(Inter.get("Label.None"), 2, true)); //NOI18N
+						jLabelCoverInfo.setText(FolderInfoResult.colorField(Inter.get("Label.None"), 2)); //NOI18N
 					}
 				}
 				
@@ -1986,7 +1978,8 @@ public class DialogCheck extends javax.swing.JDialog {
                     if(cover.getType().equals(Cover.CoverType.MB)) {
                         //List all MB covers
                         for(Cover.MbImage mbImage : cover.getCoverArtArchiveList()) {
-                            Cover coverMB = new Cover(Cover.CoverType.MB, "", "<html>"+mbImage.getMsg()+"<BR>"+cover.getName()+"</html>"); //NOI18N
+                            Cover coverMB = new Cover(Cover.CoverType.MB, "", 
+									"<html>"+mbImage.getMsg()+"<BR>"+cover.getName()+"</html>"); //NOI18N
                             coverMB.setImage(mbImage.getImage());
                              if(coverMB.getImage()!=null) {
                                  coversList.add(coverMB); 
@@ -2000,10 +1993,12 @@ public class DialogCheck extends javax.swing.JDialog {
                     progressBarCover.progress("");
                 }
                 progressBarCover.reset();
-                
                 //Select better image and display a message
-                Cover cover = Collections.min(coversList); //This is best cover found
-                setCover(cover);
+				Cover cover = new Cover("NotFoundName", null, "");
+				if(coversList.size()>0) {
+					cover = Collections.min(coversList); //This is best cover found
+				}
+				setCover(cover);
 
             }
         };
@@ -2035,11 +2030,11 @@ public class DialogCheck extends javax.swing.JDialog {
         if(folder.getFirstCoverFromTags()==null) {
             if(folder.getFilesImage().size()>0 || image!=null) {
                 jPanelCheckCoverThumb.setEnabled(true); //TODO: This does not work on jPanelCheckCoverThumb (check all usages)
-                jLabelCoverInfo.setText(FolderInfoResult.colorField(Inter.get("Label.Select"), 2, true)); //NOI18N
+                jLabelCoverInfo.setText(FolderInfoResult.colorField(Inter.get("Label.Select"), 2)); //NOI18N
             }
             else {
                 jPanelCheckCoverThumb.setEnabled(false);
-                jLabelCoverInfo.setText(FolderInfoResult.colorField(Inter.get("Label.None"), 2, true)); //NOI18N
+                jLabelCoverInfo.setText(FolderInfoResult.colorField(Inter.get("Label.None"), 2)); //NOI18N
             }
         }
         
@@ -2069,20 +2064,17 @@ public class DialogCheck extends javax.swing.JDialog {
 	}
     
     private void displayMatch(int matchId) throws CloneNotSupportedException {
-
 		enableAddOptions(false);
         progressBar.setIndeterminate(Inter.get("Msg.Scan.SearchingMatches"));  //NOI18N
-
         ReleaseMatch match = folder.getMatch(matchId);//TODO: support match==null (should not happen)
-        Map<String, FolderInfoResult> results = folder.getResults();        
-
+        Map<String, FolderInfoResult> results = folder.getResults(); 
+		
         folder.analyseMatch(matchId, progressBar);
-
+		
         progressBar.setIndeterminate(Inter.get("Msg.Scan.AnalyzingMatch"));  //NOI18N
         FolderInfoResult result = folder.getResults().get("nbFiles");  //NOI18N
         jLabelCheckNbFiles.setText(result.getDisplayText());
         jLabelCheckNbFiles.setToolTipText(result.getDisplayToolTip());
-        //Also displayed in displayMatch
 
     //DUPLICATES
         jComboBoxCheckDuplicates.removeAllItems();
@@ -2104,7 +2096,6 @@ public class DialogCheck extends javax.swing.JDialog {
     //TRACKS (ARTIST, TITLE, ...)
 
         //Number of files vs tracks
-        
         result = results.get("nbFiles");  //NOI18N
         jLabelCheckNbFiles.setText(result.getDisplayText());
         jLabelCheckNbFiles.setToolTipText(result.getDisplayToolTip());
@@ -2171,10 +2162,18 @@ public class DialogCheck extends javax.swing.JDialog {
         progressBar.reset();
 	}
 
-    private void applyGenre(String genre) {
+    private static void applyGenre(String genre) {
 		if(folder.getFilesAudioTableModel() != null) { //Happens at init, because we need to fillup jComboBoxGenre before tableModelAddTags
             folder.setNewGenre(genre);
             displayMatchTracks(9);
+		}
+		
+		FolderInfoResult result = folder.getResults().get("genre"); //NOI18N
+		if(result.errorLevel<=0 && result.value.equals(genre)) {
+			highlightGenre(result.value, Color.GREEN);
+		}
+		else {
+			highlightGenre(genre, Color.ORANGE);
 		}
 	}
 
@@ -2288,7 +2287,7 @@ public class DialogCheck extends javax.swing.JDialog {
     private static javax.swing.JButton jButtonCheckOpen;
     private static javax.swing.JButton jButtonCheckPreview;
     private static javax.swing.JButton jButtonCheckSaveTags;
-    private javax.swing.JButton jButtonCheckScanner;
+    private static javax.swing.JButton jButtonCheckScanner;
     private static javax.swing.JButton jButtonCheckSearch;
     private static javax.swing.JButton jButtonCheckSingleFolder;
     private javax.swing.JButton jButtonCheckUp;

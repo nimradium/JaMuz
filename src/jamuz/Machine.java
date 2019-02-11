@@ -22,8 +22,6 @@ import jamuz.process.merge.StatSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Options class
@@ -55,7 +53,7 @@ public final class Machine {
 		statSources = new LinkedHashMap<>();
 		devices = new LinkedHashMap<>();
         StringBuilder zText = new StringBuilder ();
-		if(Jamuz.getDb().isMachine(this.name, zText)) {
+		if(Jamuz.getDb().isMachine(this.name, zText, false)) {
             this.description=zText.toString();
 			if(!Jamuz.getDb().getOptions(options, this.name)) {
 				return false;
@@ -124,10 +122,10 @@ public final class Machine {
 	 * @return
 	 */
 	public Collection<StatSource> getStatSources(boolean force) {
-//		if(force) {
-//			statSources = new LinkedHashMap<>();
-//			Jamuz.getDb().getStatSources(statSources, this.name);
-//		}
+		if(force) {
+			statSources = new LinkedHashMap<>();
+			Jamuz.getDb().getStatSources(statSources, this.name, false);
+		}
 		return statSources.values();
 	}
 	
@@ -150,6 +148,19 @@ public final class Machine {
 	 * @return
 	 */
 	public Collection<Device> getDevices() {
+		return getDevices(false);
+	}
+	
+	/**
+	 * Return list of devices as Collection
+	 * @param force
+	 * @return
+	 */
+	public Collection<Device> getDevices(boolean force) {
+		if(force) {
+			devices = new LinkedHashMap<>();
+			Jamuz.getDb().getDevices(devices, this.name, false);
+		}
 		return devices.values();
 	}
 	

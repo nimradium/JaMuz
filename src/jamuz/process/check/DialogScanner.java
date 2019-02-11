@@ -58,6 +58,16 @@ public class DialogScanner extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         jTextFieldPath.setText(path);
+		jLabelAlbum.setText("%b : "+Inter.get("Tag.Album"));
+		jLabelAlbumArtist.setText("%z : "+Inter.get("Tag.AlbumArtist"));
+		jLabelArtist.setText("%a : "+Inter.get("Tag.Artist"));
+		jLabelComment.setText("%c : "+Inter.get("Tag.Comment"));
+		jLabelDiscNo.setText("%d : "+Inter.get("Tag.DiscNo"));
+		jLabelDiscTotal.setText("%x : "+Inter.get("Tag.DiscTotal"));
+		jLabelTitle.setText("%t : "+Inter.get("Tag.Title"));
+		jLabelTrackNo.setText("%n : "+Inter.get("Tag.TrackNo"));
+		jLabelTrackTotal.setText("%l : "+Inter.get("Tag.TrackTotal"));
+		jLabelYear.setText("%y : "+Inter.get("Tag.Year"));
         patterns = new ArrayList<>();
 		try {
 			File f = Jamuz.getFile("Patterns.txt", "data");
@@ -68,7 +78,6 @@ public class DialogScanner extends javax.swing.JDialog {
 		} catch (IOException ex) {
 			Jamuz.getLogger().log(Level.SEVERE, null, ex);
 		}
-		
         jTextFieldPattern.getDocument().addDocumentListener(new DocumentListener(){ 
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -85,20 +94,15 @@ public class DialogScanner extends javax.swing.JDialog {
                 // Not used when document is plain text
             }
         });
-        
-        //Get jTableSync model
 		tableModel = (TableModel) jTableScanner.getModel();
-		//Set the model
 		String[] columnNames =  { "#", Inter.get("Tag.AlbumArtist"), Inter.get("Tag.Album"), Inter.get("Tag.TrackNo"), "/", 
             Inter.get("Tag.DiscNo"), "/", Inter.get("Tag.Artist"), Inter.get("Tag.Title"), Inter.get("Tag.Year"), Inter.get("Tag.Comment")};  //NOI18N
-        
 		Object[][] data = {
 			{0, "Default", "Default", "Default", "Default", "Default", "Default", "Default", "Default", "Default", "Default"}  //NOI18N
 		};
 		tableModel.setModel(columnNames, data);
-		//Clear the table
 		tableModel.clear();
-		//Adding columns from model. Cannot be done automatically on properties
+		//Adding columns from model: Cannot be done automatically on properties
 		// as done, in initComponents, before setColumnModel which removes the columns ...
 		jTableScanner.createDefaultColumnsFromModel();
 		
@@ -141,21 +145,16 @@ public class DialogScanner extends javax.swing.JDialog {
         //TODO: Do the same for other badly called mouseClicked event on JTable instead of below
         //http://stackoverflow.com/questions/10467258/netbeans-how-do-i-add-a-valuechanged-listener-to-a-jtable-from-the-design-gu
         
-        jTableScanner.getSelectionModel().addListSelectionListener(
-            new javax.swing.event.ListSelectionListener() {
-                @Override
-                public void valueChanged(ListSelectionEvent evt) {
-                    //Getting selected File
-                    int selectedRow = jTableScanner.getSelectedRow();
-                    if (selectedRow >= 0) {
-                        //convert to model index (as sortable model)
-                        selectedRow = jTableScanner.convertRowIndexToModel(selectedRow);
-                        jTextFieldPattern.setText(patterns.get(selectedRow));
-                        applyPattern(); 	  //NOI18N
-                    }
-                }
-            }
-        );
+        jTableScanner.getSelectionModel().addListSelectionListener((ListSelectionEvent evt) -> {
+			//Getting selected File
+			int selectedRow = jTableScanner.getSelectedRow();
+			if (selectedRow >= 0) {
+				//convert to model index (as sortable model)
+				selectedRow = jTableScanner.convertRowIndexToModel(selectedRow);
+				jTextFieldPattern.setText(patterns.get(selectedRow));
+				applyPattern(); 	  //NOI18N
+			}
+		});
         
         for(String pattern : patterns) {
             Map<String, String> extracted = PatternProcessor.getMap(path, pattern);
@@ -184,8 +183,11 @@ public class DialogScanner extends javax.swing.JDialog {
     
     private static void addRow(Map<String, String> extracted) {
         
-//        String[] columnNames =  { "#", Inter.get("Tag.AlbumArtist"), Inter.get("Tag.Album"), Inter.get("Tag.TrackNo"), "/", 
-//            Inter.get("Tag.DiscNo"), "/", Inter.get("Tag.Artist"), Inter.get("Tag.Title"), Inter.get("Tag.Year"), Inter.get("Tag.Comment")};  //NOI18N
+//        String[] columnNames =  { "#", Inter.get("Tag.AlbumArtist"), 
+//				Inter.get("Tag.Album"), Inter.get("Tag.TrackNo"), "/", 
+//				Inter.get("Tag.DiscNo"), "/", Inter.get("Tag.Artist"), 
+//				Inter.get("Tag.Title"), Inter.get("Tag.Year"), 
+//				Inter.get("Tag.Comment")};  //NOI18N
         
         Object[] data = new Object[]{
             extracted.size(),
@@ -215,16 +217,44 @@ public class DialogScanner extends javax.swing.JDialog {
     private void initComponents() {
 
         jTextFieldPath = new javax.swing.JTextField();
-        jButtonCancel = new javax.swing.JButton();
-        jButtonSave = new javax.swing.JButton();
-        jLabelExtracted = new javax.swing.JLabel();
         jScrollPaneCheckTags3 = new javax.swing.JScrollPane();
         jTableScanner = new jamuz.gui.swing.TableHorizontal();
         jTextFieldPattern = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        jButtonCancel = new javax.swing.JButton();
+        jButtonSave = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jLabelYearValue = new javax.swing.JLabel();
+        jLabelTrackTotal = new javax.swing.JLabel();
+        jLabelTrackNoValue = new javax.swing.JLabel();
+        jLabelAlbumArtistValue = new javax.swing.JLabel();
+        jLabelDiscNo = new javax.swing.JLabel();
+        jLabelDiscNoValue = new javax.swing.JLabel();
+        jLabelYear = new javax.swing.JLabel();
+        jLabelCommentValue = new javax.swing.JLabel();
+        jLabelTrackNo = new javax.swing.JLabel();
+        jLabelAlbumValue = new javax.swing.JLabel();
+        jLabelComment = new javax.swing.JLabel();
+        jLabelArtist = new javax.swing.JLabel();
+        jLabelTitle = new javax.swing.JLabel();
+        jLabelTrackTotalValue = new javax.swing.JLabel();
+        jLabelArtistValue = new javax.swing.JLabel();
+        jLabelDiscTotalValue = new javax.swing.JLabel();
+        jLabelDiscTotal = new javax.swing.JLabel();
+        jLabelAlbum = new javax.swing.JLabel();
+        jLabelAlbumArtist = new javax.swing.JLabel();
+        jLabelTitleValue = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jTextFieldPath.setEditable(false);
+
+        jTableScanner.setAutoCreateColumnsFromModel(false);
+        jTableScanner.setModel(new jamuz.gui.swing.TableModel());
+        jTableScanner.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        jScrollPaneCheckTags3.setViewportView(jTableScanner);
 
         jButtonCancel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jamuz/ressources/cancel.png"))); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("jamuz/Bundle"); // NOI18N
@@ -243,12 +273,164 @@ public class DialogScanner extends javax.swing.JDialog {
             }
         });
 
-        jLabelExtracted.setText("jLabel1");
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonCancel, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
+                    .addComponent(jButtonSave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButtonCancel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButtonSave)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
-        jTableScanner.setAutoCreateColumnsFromModel(false);
-        jTableScanner.setModel(new jamuz.gui.swing.TableModel());
-        jTableScanner.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
-        jScrollPaneCheckTags3.setViewportView(jTableScanner);
+        jLabelYearValue.setText("jLabelYearValue");
+
+        jLabelTrackTotal.setText("jLabelTrackTotal");
+
+        jLabelTrackNoValue.setText("jLabelTrackNoValue");
+
+        jLabelAlbumArtistValue.setText("jLabelAlbumArtistValue");
+
+        jLabelDiscNo.setText("jLabelDiscNo");
+
+        jLabelDiscNoValue.setText("jLabelDiscNoValue");
+
+        jLabelYear.setText("jLabelYear");
+
+        jLabelCommentValue.setText("jLabelCommentValue");
+
+        jLabelTrackNo.setText("jLabelTrackNo");
+
+        jLabelAlbumValue.setText("jLabelAlbumValue");
+
+        jLabelComment.setText("jLabelComment");
+
+        jLabelArtist.setText("jLabelArtist");
+
+        jLabelTitle.setText("jLabelTitle");
+
+        jLabelTrackTotalValue.setText("jLabelTrackTotalValue");
+
+        jLabelArtistValue.setText("jLabelArtistValue");
+
+        jLabelDiscTotalValue.setText("jLabelDiscTotalValue");
+
+        jLabelDiscTotal.setText("jLabelDiscTotal");
+
+        jLabelAlbum.setText("jLabelAlbum");
+
+        jLabelAlbumArtist.setText("jLabelAlbumArtist");
+
+        jLabelTitleValue.setText("jLabelTitleValue");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelTrackTotal)
+                    .addComponent(jLabelDiscTotal)
+                    .addComponent(jLabelTrackNo)
+                    .addComponent(jLabelDiscNo)
+                    .addComponent(jLabelYear))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelDiscNoValue)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabelTrackTotalValue)
+                            .addComponent(jLabelTrackNoValue)
+                            .addComponent(jLabelDiscTotalValue)
+                            .addComponent(jLabelYearValue))
+                        .addGap(59, 59, 59)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabelTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabelAlbum, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabelComment, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabelAlbumValue)
+                                    .addComponent(jLabelTitleValue)
+                                    .addComponent(jLabelCommentValue)))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabelAlbumArtist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabelArtist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabelArtistValue)
+                                    .addComponent(jLabelAlbumArtistValue))))))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelTrackNo)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabelTrackNoValue)
+                        .addComponent(jLabelArtist)
+                        .addComponent(jLabelArtistValue)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTrackTotal)
+                    .addComponent(jLabelTrackTotalValue)
+                    .addComponent(jLabelAlbumArtist)
+                    .addComponent(jLabelAlbumArtistValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelDiscTotal)
+                    .addComponent(jLabelDiscTotalValue)
+                    .addComponent(jLabelAlbum)
+                    .addComponent(jLabelAlbumValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelDiscNo)
+                    .addComponent(jLabelDiscNoValue)
+                    .addComponent(jLabelTitle)
+                    .addComponent(jLabelTitleValue))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelYear)
+                    .addComponent(jLabelYearValue)
+                    .addComponent(jLabelComment)
+                    .addComponent(jLabelCommentValue))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jLabel1.setText("<html>\n::U TO UPPER CASE<BR/>\n::l to lower case<BR/>\n::c Capitalize first<BR/>\n<b>::C</b> Capitalize Fully<BR/>\n::u uncapitalize<BR/>\n::s sWaP CaSe<BR/>\n</html>"); // NOI18N
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -257,16 +439,15 @@ public class DialogScanner extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTextFieldPath)
+                    .addComponent(jTextFieldPattern)
                     .addComponent(jScrollPaneCheckTags3)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabelExtracted, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 42, Short.MAX_VALUE)
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jButtonCancel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButtonSave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(jTextFieldPath, javax.swing.GroupLayout.DEFAULT_SIZE, 1185, Short.MAX_VALUE)
-                    .addComponent(jTextFieldPattern))
-                .addContainerGap())
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -275,16 +456,13 @@ public class DialogScanner extends javax.swing.JDialog {
                 .addComponent(jTextFieldPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTextFieldPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButtonCancel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonSave))
-                    .addComponent(jLabelExtracted, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPaneCheckTags3, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
-                .addContainerGap())
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPaneCheckTags3, javax.swing.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE))
         );
 
         pack();
@@ -314,9 +492,40 @@ public class DialogScanner extends javax.swing.JDialog {
     }//GEN-LAST:event_jButtonSaveActionPerformed
 
     private void applyPattern() {
-        jLabelExtracted.setText(PatternProcessor.toString(jTextFieldPath.getText(), jTextFieldPattern.getText()));
-        
+		Map<String, String> extracted = PatternProcessor.getMap(jTextFieldPath.getText(), jTextFieldPattern.getText());
+		jLabelAlbumValue.setText(bold(extracted, "%b"));
+        jLabelAlbumArtistValue.setText(bold(extracted, "%z"));
+        jLabelArtistValue.setText(bold(extracted, "%a"));
+        jLabelCommentValue.setText(bold(extracted, "%c"));
+        jLabelDiscNoValue.setText(bold(extracted, "%d"));
+        jLabelDiscTotalValue.setText(bold(extracted, "%x"));
+        jLabelTitleValue.setText(bold(extracted, "%t"));
+        jLabelTrackNoValue.setText(bold(extracted, "%n"));
+        jLabelTrackTotalValue.setText(bold(extracted, "%l"));
+        jLabelYearValue.setText(bold(extracted, "%y"));
+		jLabelAlbumValue.setText(bold(extracted,"%b"));
+        jLabelAlbumArtistValue.setText(bold(extracted, "%z"));
+        jLabelArtistValue.setText(bold(extracted, "%a"));
+        jLabelCommentValue.setText(bold(extracted, "%c"));
+        jLabelDiscNoValue.setText(bold(extracted, "%d"));
+        jLabelDiscTotalValue.setText(bold(extracted, "%x"));
+        jLabelTitleValue.setText(bold(extracted, "%t"));
+        jLabelTrackNoValue.setText(bold(extracted, "%n"));
+        jLabelTrackTotalValue.setText(bold(extracted, "%l"));
+        jLabelYearValue.setText(bold(extracted, "%y"));
     }
+	
+	private String bold(Map<String, String> extracted, String key) {
+		String value=extracted.containsKey(key)?extracted.get(key):"";
+		if(!value.equals("")) {
+			return new StringBuilder().append("<html>")
+					.append("<b>")
+					.append(value)
+					.append("</b>").append("</html>")
+					.toString();
+		}
+		return "";
+	}
 
     /**
      * @param args the command line arguments
@@ -348,7 +557,30 @@ public class DialogScanner extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonCancel;
     private javax.swing.JButton jButtonSave;
-    private javax.swing.JLabel jLabelExtracted;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabelAlbum;
+    private javax.swing.JLabel jLabelAlbumArtist;
+    private javax.swing.JLabel jLabelAlbumArtistValue;
+    private javax.swing.JLabel jLabelAlbumValue;
+    private javax.swing.JLabel jLabelArtist;
+    private javax.swing.JLabel jLabelArtistValue;
+    private javax.swing.JLabel jLabelComment;
+    private javax.swing.JLabel jLabelCommentValue;
+    private javax.swing.JLabel jLabelDiscNo;
+    private javax.swing.JLabel jLabelDiscNoValue;
+    private javax.swing.JLabel jLabelDiscTotal;
+    private javax.swing.JLabel jLabelDiscTotalValue;
+    private javax.swing.JLabel jLabelTitle;
+    private javax.swing.JLabel jLabelTitleValue;
+    private javax.swing.JLabel jLabelTrackNo;
+    private javax.swing.JLabel jLabelTrackNoValue;
+    private javax.swing.JLabel jLabelTrackTotal;
+    private javax.swing.JLabel jLabelTrackTotalValue;
+    private javax.swing.JLabel jLabelYear;
+    private javax.swing.JLabel jLabelYearValue;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private static javax.swing.JScrollPane jScrollPaneCheckTags3;
     private static javax.swing.JTable jTableScanner;
     private javax.swing.JTextField jTextFieldPath;
